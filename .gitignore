@@ -1,0 +1,8 @@
+# let's not upload gigabytes of data
+weather.zip 
+
+# virtual environment
+.venv
+.env
+venv
+env
