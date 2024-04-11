@@ -6,3 +6,6 @@ weather.zip
 .env
 venv
 env
+
+*.pyc
+*.pyo
