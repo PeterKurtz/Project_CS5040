@@ -6,7 +6,14 @@ from matplotlib.animation import FuncAnimation
 
 df = pd.read_csv('bird_tracking.csv')
 
+print("Choose a date to start between 2013-08-15 and 2014-04-30 of format yyyy-mm-dd")
+dateStart = input()
+dateStart +=  ' 00:00:00+00'
+dateStart = pd.to_datetime(dateStart)
+
 df['date_time'] = pd.to_datetime(df['date_time'])
+
+df = df[df['date_time'] >= dateStart]
 
 gdfs = {}
 
@@ -17,8 +24,8 @@ for category, group in df.groupby('bird_name'):
 fig, ax = plt.subplots()
 ax.set_aspect('equal')
 
-ax.set_xlim(-10, 10)
-ax.set_ylim(40, 60)
+ax.set_xlim(-20, 5)
+ax.set_ylim(10, 55)
 
 scatter_plots = {}
 for category, gdf in gdfs.items():
@@ -34,6 +41,8 @@ def update(frame):
             last_point = points[-1]
 
             scatter_plots[category].set_offsets([(last_point.x, last_point.y)])
+
+
     return list(scatter_plots.values())
 
 ani = FuncAnimation(fig, update, frames=df['date_time'], blit=True)
