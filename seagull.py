@@ -3,8 +3,11 @@ import geopandas as gpd
 from shapely.geometry import Point
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+import contextily as ctx
 
 df = pd.read_csv('bird_tracking.csv')
+
+#Test 2013-11-01, 2013-11-17
 
 print("Choose a date to start between 2013-08-15 and 2014-04-30 of format yyyy-mm-dd")
 dateStart = input()
@@ -24,8 +27,10 @@ for category, group in df.groupby('bird_name'):
 fig, ax = plt.subplots()
 ax.set_aspect('equal')
 
-ax.set_xlim(-20, 5)
-ax.set_ylim(10, 55)
+ax.set_xlim(-20, 10)
+ax.set_ylim(8, 55)
+
+ctx.add_basemap(ax, crs=gdfs[list(gdfs.keys())[0]].crs.to_string())
 
 scatter_plots = {}
 for category, gdf in gdfs.items():
