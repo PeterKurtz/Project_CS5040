@@ -39,6 +39,8 @@ for category, gdf in gdfs.items():
 def update(frame):
     for category, gdf in gdfs.items():
 
+        #print(frame)
+
         points = gdf[gdf['date_time'] <= frame].geometry.values
 
         if len(points) > 0:
