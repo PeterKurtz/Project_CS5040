@@ -28,7 +28,7 @@ fig, ax = plt.subplots()
 ax.set_aspect('equal')
 
 ax.set_xlim(-20, 10)
-ax.set_ylim(8, 55)
+ax.set_ylim(0, 55)
 
 ctx.add_basemap(ax, crs=gdfs[list(gdfs.keys())[0]].crs.to_string())
 
@@ -37,9 +37,14 @@ for category, gdf in gdfs.items():
     scatter_plots[category] = ax.scatter([], [], marker='o', label=category)
 
 def update(frame):
+
+    if frame >= pd.to_datetime('2014-04-30 23:51:29+00:00'):
+        ani.event_source.stop()
+        plt.close(fig)
+
     for category, gdf in gdfs.items():
 
-        #print(frame)
+        print(frame)
 
         points = gdf[gdf['date_time'] <= frame].geometry.values
 
@@ -52,7 +57,7 @@ def update(frame):
 
     return list(scatter_plots.values())
 
-ani = FuncAnimation(fig, update, frames=df['date_time'], blit=True)
+ani = FuncAnimation(fig, update, frames=df['date_time'], blit=True, repeat = False)
 
 ax.legend()
 
