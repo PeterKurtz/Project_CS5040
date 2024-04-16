@@ -1,9 +1,25 @@
+import sys
+from functools import cache
 import pandas as pd
 import geopandas as gpd
 from shapely.geometry import Point
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import contextily as ctx
+from utils import WindData
+
+COLORS = {
+    "Eric": "tab:orange",
+    "Nico": "tab:blue",
+    "Sanne": "tab:green",
+}
+
+action = 'draw'
+
+if len(sys.argv) >= 2:
+    action = sys.argv[1]
+
+ARROW_SCALE_FACTOR = 0.3
 
 df = pd.read_csv('bird_tracking.csv')
 
@@ -24,7 +40,7 @@ for category, group in df.groupby('bird_name'):
     geometry = [Point(xy) for xy in zip(group['longitude'], group['latitude'])]
     gdfs[category] = gpd.GeoDataFrame(group, geometry=geometry, crs="EPSG:4326")
 
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize=(16, 9), dpi=120)
 ax.set_aspect('equal')
 
 ax.set_xlim(-20, 10)
@@ -32,9 +48,12 @@ ax.set_ylim(0, 55)
 
 ctx.add_basemap(ax, crs=gdfs[list(gdfs.keys())[0]].crs.to_string())
 
-scatter_plots = {}
+artists = {}
 for category, gdf in gdfs.items():
-    scatter_plots[category] = ax.scatter([], [], marker='o', label=category)
+    artists[category] = ax.scatter([], [], marker='o', label=category, color=COLORS[category])
+    artists[f"arrow_{category}"] = ax.arrow(0, 0, 0, 0, color=COLORS[category], width=0.04, head_width=0.2)
+
+wind_data = WindData("weather.zip")
 
 def update(frame):
 
@@ -52,14 +71,19 @@ def update(frame):
 
             last_point = points[-1]
 
-            scatter_plots[category].set_offsets([(last_point.x, last_point.y)])
+            dx, dy = wind_data.get_wind_vector(frame, last_point.x, last_point.y)
 
+            artists[category].set_offsets([(last_point.x, last_point.y)])
 
-    return list(scatter_plots.values())
+            artists[f"arrow_{category}"].set_data(x=last_point.x, y=last_point.y, dx=dx * ARROW_SCALE_FACTOR, dy=dy * ARROW_SCALE_FACTOR)
+
+    return list(artists.values())
 
 ani = FuncAnimation(fig, update, frames=df['date_time'], blit=True, repeat = False)
 
 ax.legend()
 
-plt.show()
-
+if action == 'render':
+    ani.save(filename='./ffmpeg-test.mkv', writer='ffmpeg')
+else:
+    plt.show()
